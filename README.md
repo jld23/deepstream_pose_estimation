@@ -48,3 +48,43 @@ For any issues or questions, please feel free to make a new post on the [DeepStr
 Cao, Zhe, et al. "Realtime multi-person 2d pose estimation using part affinity fields." Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition. 2017.
 
 Xiao, Bin, Haiping Wu, and Yichen Wei. "Simple baselines for human pose estimation and tracking." Proceedings of the European Conference on Computer Vision (ECCV). 2018.
+
+## Notes
+
+after building the container and project this command works
+```{bash}
+root@29899558d390:/opt/nvidia/deepstream/deepstream-6.0/sources/apps/sample_apps/deepstream-pose_estimation# ./deepstream-pose-estimation-app ../../../../samples/streams/sample_720p.h264 ./720p3_
+
+```
+and this doesn't
+```{bash}
+root@29899558d390:/opt/nvidia/deepstream/deepstream-6.0/sources/apps/sample_apps/deepstream-pose_estimation# ./deepstream-pose-estimation-app ncsu_swing.mp4 ./post_
+```
+Here is the error message:
+```
+Now playing: ncsu_swing.mp4
+0:00:02.097240502 235336 0x55abba917d80 INFO                 nvinfer gstnvinfer.cpp:638:gst_nvinfer_logger:<primary-nvinference-engine> NvDsInferContext[UID 1]: Info from NvDsInferContextImpl::deserializeEngineAndBackend() <nvdsinfer_context_impl.cpp:1900> [UID = 1]: deserialized trt engine from :/opt/nvidia/deepstream/deepstream-6.0/sources/apps/sample_apps/deepstream-pose_estimation/pose_estimation.onnx_b1_gpu0_fp32.engine
+INFO: ../nvdsinfer/nvdsinfer_model_builder.cpp:610 [Implicit Engine Info]: layers num: 3
+0   INPUT  kFLOAT input.1         3x224x224       
+1   OUTPUT kFLOAT 262             18x56x56        
+2   OUTPUT kFLOAT 264             42x56x56        
+
+0:00:02.097343549 235336 0x55abba917d80 INFO                 nvinfer gstnvinfer.cpp:638:gst_nvinfer_logger:<primary-nvinference-engine> NvDsInferContext[UID 1]: Info from NvDsInferContextImpl::generateBackendContext() <nvdsinfer_context_impl.cpp:2004> [UID = 1]: Use deserialized engine model: /opt/nvidia/deepstream/deepstream-6.0/sources/apps/sample_apps/deepstream-pose_estimation/pose_estimation.onnx_b1_gpu0_fp32.engine
+0:00:02.102549947 235336 0x55abba917d80 INFO                 nvinfer gstnvinfer_impl.cpp:313:notifyLoadModelStatus:<primary-nvinference-engine> [UID 1]: Load new model:deepstream_pose_estimation_config.txt sucessfully
+Running...
+ERROR from element h264-parser: Failed to parse stream
+Error details: gstbaseparse.c(2998): gst_base_parse_check_sync (): /GstPipeline:deepstream-tensorrt-openpose-pipeline/GstH264Parse:h264-parser
+Returned, stopping playback
+Deleting pipeline
+```
+
+The codex are the same as viewed in VLC except the frame rate
+
+![image](codec1.png)
+
+
+
+This hangs
+```
+root@29899558d390:/opt/nvidia/deepstream/deepstream-6.0/sources/apps/sample_apps/deepstream-pose_estimation# ./deepstream-pose-estimation-app /opt/nvidia/deepstream/deepstream-6.0/samples/streams/sample_1080p_h264.mp4 ./1080p_
+```

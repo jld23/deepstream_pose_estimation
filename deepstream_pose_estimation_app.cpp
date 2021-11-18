@@ -227,7 +227,8 @@ osd_sink_pad_buffer_probe(GstPad *pad, GstPadProbeInfo *info,
     NvOSD_TextParams *txt_params = &display_meta->text_params[0];
     display_meta->num_labels = 1;
     txt_params->display_text = (char *)g_malloc0(MAX_DISPLAY_LEN);
-    offset = snprintf(txt_params->display_text, MAX_DISPLAY_LEN, "Frame Number =  %d", frame_number);
+    offset = snprintf(txt_params->display_text, MAX_DISPLAY_LEN, "Frame Number: %d", frame_number);
+    // TODO need to print out the joint coordinates and write them to a file.
     offset = snprintf(txt_params->display_text + offset, MAX_DISPLAY_LEN, "");
 
     txt_params->x_offset = 10;
