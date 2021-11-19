@@ -27,7 +27,6 @@ PKGS:= gstreamer-1.0 gstreamer-video-1.0 x11 json-glib-1.0
 OBJS:= $(patsubst %.c,%.o, $(patsubst %.cpp,%.o, $(SRCS)))
 
 CFLAGS+= -I../../apps-common/includes -I../../../includes -I../deepstream-app/ -DDS_VERSION_MINOR=0 -DDS_VERSION_MAJOR=6
-# CFLAGS+= -I/opt/nvidia/deepstream/deepstream-6.0/sources/apps/apps-common/includes -I/opt/nvidia/deepstream/deepstream-6.0/sources/includes -I/opt/nvidia/deepstream/deepstream-6.0/sources/apps/sample_apps/deepstream-app/ -DDS_VERSION_MINOR=0 -DDS_VERSION_MAJOR=6
 
 LIBS+= -L$(LIB_INSTALL_DIR) -lnvdsgst_meta -lnvds_meta -lnvds_utils -lm \
         -lpthread -ldl -Wl,-rpath,$(LIB_INSTALL_DIR)

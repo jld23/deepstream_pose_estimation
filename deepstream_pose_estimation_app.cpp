@@ -34,25 +34,23 @@
 
 #define MAX_STREAMS 64
 
-typedef struct
-{
-  /** identifies the stream ID */
-  guint32 stream_index;
-  gdouble fps[MAX_STREAMS];
-  gdouble fps_avg[MAX_STREAMS];
-  guint32 num_instances;
-  guint header_print_cnt;
-  GMutex fps_lock;
-  gpointer context;
+typedef struct {
+    /** identifies the stream ID */
+    guint32 stream_index;
+    gdouble fps[MAX_STREAMS];
+    gdouble fps_avg[MAX_STREAMS];
+    guint32 num_instances;
+    guint header_print_cnt;
+    GMutex fps_lock;
+    gpointer context;
 
-  /** Test specific info */
-  guint32 set_batch_size;
+    /** Test specific info */
+    guint32 set_batch_size;
 } PerfCtx;
 
-typedef struct
-{
-  GMutex *lock;
-  int num_sources;
+typedef struct {
+    GMutex *lock;
+    int num_sources;
 } LatencyCtx;
 
 template <class T>
@@ -68,26 +66,23 @@ gint frame_number = 0;
 
 /**
  * callback function to print the performance numbers of each stream.
- */
+*/
 static void
-perf_cb(gpointer context, NvDsAppPerfStruct *str)
-{
-  PerfCtx *thCtx = (PerfCtx *)context;
+perf_cb(gpointer context, NvDsAppPerfStruct *str) {
+  PerfCtx *thCtx = (PerfCtx *) context;
 
   g_mutex_lock(&thCtx->fps_lock);
   /** str->num_instances is == num_sources */
   guint32 numf = str->num_instances;
   guint32 i;
 
-  for (i = 0; i < numf; i++)
-  {
+  for (i = 0; i < numf; i++) {
     thCtx->fps[i] = str->fps[i];
     thCtx->fps_avg[i] = str->fps_avg[i];
   }
   thCtx->context = thCtx;
   g_print("**PERF: ");
-  for (i = 0; i < numf; i++)
-  {
+  for (i = 0; i < numf; i++) {
     g_print("%.2f (%.2f)\t", thCtx->fps[i], thCtx->fps_avg[i]);
   }
   g_print("\n");
@@ -99,24 +94,20 @@ perf_cb(gpointer context, NvDsAppPerfStruct *str)
  */
 
 static GstPadProbeReturn
-latency_measurement_buf_prob(GstPad *pad, GstPadProbeInfo *info, gpointer u_data)
-{
-  LatencyCtx *ctx = (LatencyCtx *)u_data;
+latency_measurement_buf_prob(GstPad *pad, GstPadProbeInfo *info, gpointer u_data) {
+  LatencyCtx *ctx = (LatencyCtx *) u_data;
   static int batch_num = 0;
   guint i = 0, num_sources_in_batch = 0;
-  if (nvds_enable_latency_measurement)
-  {
-    GstBuffer *buf = (GstBuffer *)info->data;
+  if (nvds_enable_latency_measurement) {
+    GstBuffer *buf = (GstBuffer *) info->data;
     NvDsFrameLatencyInfo *latency_info = NULL;
     g_mutex_lock(ctx->lock);
     latency_info = (NvDsFrameLatencyInfo *)
-        calloc(1, ctx->num_sources * sizeof(NvDsFrameLatencyInfo));
-    ;
+        calloc(1, ctx->num_sources * sizeof(NvDsFrameLatencyInfo));;
     g_print("\n************BATCH-NUM = %d**************\n", batch_num);
     num_sources_in_batch = nvds_measure_buffer_latency(buf, latency_info);
 
-    for (i = 0; i < num_sources_in_batch; i++)
-    {
+    for (i = 0; i < num_sources_in_batch; i++) {
       g_print("Source id = %d Frame_num = %d Frame latency = %lf (ms) \n",
               latency_info[i].source_id,
               latency_info[i].frame_num,
@@ -138,7 +129,7 @@ parse_objects_from_tensor_meta(NvDsInferTensorMeta *tensor_meta)
 
   float threshold = 0.1;
   int window_size = 5;
-  int max_num_parts = 20;
+  int max_num_parts = 2;
   int num_integral_samples = 7;
   float link_threshold = 0.1;
   int max_num_objects = 100;
@@ -314,8 +305,7 @@ osd_sink_pad_buffer_probe(GstPad *pad, GstPadProbeInfo *info,
     NvOSD_TextParams *txt_params = &display_meta->text_params[0];
     display_meta->num_labels = 1;
     txt_params->display_text = (char *)g_malloc0(MAX_DISPLAY_LEN);
-    offset = snprintf(txt_params->display_text, MAX_DISPLAY_LEN, "Frame Number: %d", frame_number);
-    // TODO need to print out the joint coordinates and write them to a file.
+    offset = snprintf(txt_params->display_text, MAX_DISPLAY_LEN, "Frame Number =  %d", frame_number);
     offset = snprintf(txt_params->display_text + offset, MAX_DISPLAY_LEN, "");
 
     txt_params->x_offset = 10;
@@ -474,15 +464,12 @@ int main(int argc, char *argv[])
 
   /* Use convertor to convert from NV12 to RGBA as required by nvosd */
   nvvidconv = gst_element_factory_make("nvvideoconvert", "nvvideo-converter");
-
-  Gst
-      Pad *sink_pad = gst_element_get_static_pad(nvvidconv, "src");
+  GstPad *sink_pad = gst_element_get_static_pad(nvvidconv, "src");
   if (!sink_pad)
     g_print("Unable to get sink pad\n");
-  else
-  {
-    LatencyCtx *ctx = (LatencyCtx *)g_malloc0(sizeof(LatencyCtx));
-    ctx->lock = (GMutex *)g_malloc0(sizeof(GMutex));
+  else {
+    LatencyCtx *ctx = (LatencyCtx *) g_malloc0(sizeof(LatencyCtx));
+    ctx->lock = (GMutex *) g_malloc0(sizeof(GMutex));
     ctx->num_sources = 1;
     gst_pad_add_probe(sink_pad, GST_PAD_PROBE_TYPE_BUFFER,
                       latency_measurement_buf_prob, ctx, NULL);
@@ -491,10 +478,9 @@ int main(int argc, char *argv[])
   GstPad *conv_pad = gst_element_get_static_pad(nvvidconv, "sink");
   if (!conv_pad)
     g_print("Unable to get conv_pad pad\n");
-  else
-  {
-    NvDsAppPerfStructInt *str = (NvDsAppPerfStructInt *)g_malloc0(sizeof(NvDsAppPerfStructInt));
-    PerfCtx *perf_ctx = (PerfCtx *)g_malloc0(sizeof(PerfCtx));
+  else {
+    NvDsAppPerfStructInt *str = (NvDsAppPerfStructInt *) g_malloc0(sizeof(NvDsAppPerfStructInt));
+    PerfCtx *perf_ctx = (PerfCtx *) g_malloc0(sizeof(PerfCtx));
     g_mutex_init(&perf_ctx->fps_lock);
     str->context = perf_ctx;
     enable_perf_measurement(str, conv_pad, 1, 1, 0, perf_cb);
@@ -503,12 +489,12 @@ int main(int argc, char *argv[])
 
   queue = gst_element_factory_make("queue", "queue");
   filesink = gst_element_factory_make("filesink", "filesink");
-
+  
   /* Set output file location */
   char *output_path = argv[2];
-  strcat(output_path, "Pose_Estimation.mp4");
+  strcat(output_path,"Pose_Estimation.mp4");
   g_object_set(G_OBJECT(filesink), "location", output_path, NULL);
-
+  
   nvvideoconvert = gst_element_factory_make("nvvideoconvert", "nvvideo-converter1");
   tee = gst_element_factory_make("tee", "TEE");
   h264encoder = gst_element_factory_make("nvv4l2h264enc", "video-encoder");
